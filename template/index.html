@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Credit Scoring Prediction</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Creditworthiness Assessment</h1>
+        <form id="predictionForm">
+            <!-- Education -->
+            <div class="form-group">
+                <label>Education Level:</label>
+                <select name="Education" required>
+                    <option value="">Select Education</option>
+                    <option value="No formal education">No formal education</option>
+                    <option value="Primary education">Primary education</option>
+                    <option value="Secondary education">Secondary education</option>
+                    <option value="Tertiary education">Tertiary education</option>
+                    <option value="Vocational/Specialised training">Vocational/Specialised training</option>
+                    <option value="Other/Dont know">Other/Don't know</option>
+                </select>
+            </div>
+
+            <!-- Financial Service -->
+            <div class="form-group">
+                <label>Most Used Financial Service:</label>
+                <select name="most_used_financial_service" required>
+                    <option value="">Select Service</option>
+                    <option value="ATM">ATM</option>
+                    <option value="Bank">Bank</option>
+                    <option value="None of these">None of these</option>
+                </select>
+            </div>
+
+            <!-- Area Type -->
+            <div class="form-group">
+                <label>Area Type:</label>
+                <select name="Area_type" required>
+                    <option value="">Select Area</option>
+                    <option value="Rural">Rural</option>
+                    <option value="Urban">Urban</option>
+                </select>
+            </div>
+
+            <!-- Add all other features following the same pattern -->
+
+            <button type="submit">Assess Credit Score</button>
+        </form>
+
+        <div id="result" class="hidden">
+            <h2>Prediction Result</h2>
+            <p>Creditworthy: <span id="prediction"></span></p>
+            <p>Probability: <span id="probability"></span>%</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('prediction').textContent = 
+                        result.prediction ? 'Approved' : 'Not Approved';
+                    document.getElementById('probability').textContent = 
+                        (result.probability * 100).toFixed(2);
+                    document.getElementById('result').classList.remove('hidden');
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Failed to connect to server');
+            }
+        });
+    </script>
+</body>
+</html>
